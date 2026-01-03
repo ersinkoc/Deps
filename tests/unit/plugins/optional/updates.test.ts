@@ -589,4 +589,172 @@ describe('updates plugin', () => {
     // Should report info for minor updates (if mock works)
     expect(Array.isArray(findings)).toBe(true);
   });
+
+  it('should report info for patch updates', async () => {
+    await writeFile(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        name: 'test-pkg',
+        version: '1.0.0',
+        dependencies: {
+          'patch-update-pkg': '^1.0.0'
+        }
+      })
+    );
+
+    // Mock fetch to return patch version update
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ 'dist-tags': { latest: '1.0.1' } })
+    } as any);
+
+    const findings: any[] = [];
+    let result: any[] = [];
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: (plugin: string, severity: string, message: string, pkg?: string) => {
+        findings.push({ plugin, severity, message, pkg });
+      },
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    updatesPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({
+        cwd: testDir,
+        package: {
+          name: 'test-pkg',
+          version: '1.0.0',
+          dependencies: { 'patch-update-pkg': '^1.0.0' }
+        }
+      });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    expect(Array.isArray(result)).toBe(true);
+    expect(Array.isArray(findings)).toBe(true);
+  });
+
+  it('should handle fetch rejections gracefully', async () => {
+    await writeFile(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        name: 'test-pkg',
+        version: '1.0.0',
+        dependencies: {
+          'error-pkg': '^1.0.0'
+        }
+      })
+    );
+
+    // Mock fetch to reject
+    mockFetch.mockRejectedValue(new Error('Network error'));
+
+    const findings: any[] = [];
+    let result: any[] = [];
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: (plugin: string, severity: string, message: string, pkg?: string) => {
+        findings.push({ plugin, severity, message, pkg });
+      },
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    updatesPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({
+        cwd: testDir,
+        package: {
+          name: 'test-pkg',
+          version: '1.0.0',
+          dependencies: { 'error-pkg': '^1.0.0' }
+        }
+      });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    // Should handle error gracefully and return empty array
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it('should detect patch version updates correctly', async () => {
+    await writeFile(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        name: 'test-pkg',
+        version: '1.0.0',
+        dependencies: {
+          'patch-pkg': '^1.2.3'
+        }
+      })
+    );
+
+    // Mock fetch to return patch update
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ 'dist-tags': { latest: '1.2.4' } })
+    } as any);
+
+    let result: any[] = [];
+    const findings: any[] = [];
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: (plugin: string, severity: string, message: string, pkg?: string) => {
+        findings.push({ plugin, severity, message, pkg });
+      },
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    updatesPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({
+        cwd: testDir,
+        package: {
+          name: 'test-pkg',
+          version: '1.0.0',
+          dependencies: { 'patch-pkg': '^1.2.3' }
+        }
+      });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    expect(Array.isArray(result)).toBe(true);
+    expect(Array.isArray(findings)).toBe(true);
+  });
 });

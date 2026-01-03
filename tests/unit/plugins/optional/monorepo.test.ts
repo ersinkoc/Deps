@@ -425,4 +425,162 @@ describe('monorepo plugin', () => {
     // setResult is not called when no monorepo type is detected
     expect(result).toBeNull();
   });
+
+  it('should handle workspaces.packages format', async () => {
+    await writeFile(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        name: 'test-monorepo',
+        version: '1.0.0',
+        workspaces: {
+          packages: ['packages/*']
+        }
+      })
+    );
+    await writeFile(
+      join(testDir, 'package-lock.json'),
+      '{}'
+    );
+
+    let result: any = null;
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: () => {},
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    monorepoPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({ cwd: testDir });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    expect(result).toBeDefined();
+    expect(result.type).toBe('npm');
+  });
+
+  it('should handle invalid lerna.json', async () => {
+    await writeFile(
+      join(testDir, 'lerna.json'),
+      'invalid json content'
+    );
+
+    let result: any = null;
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: () => {},
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    monorepoPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({ cwd: testDir });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Should detect lerna even with invalid packages
+    expect(result).toBeDefined();
+    expect(result.type).toBe('lerna');
+    expect(result.workspacePatterns).toEqual([]);
+  });
+
+  it('should handle lerna.json with packages array', async () => {
+    await writeFile(
+      join(testDir, 'lerna.json'),
+      JSON.stringify({
+        version: 'independent',
+        packages: ['packages/*', 'apps/*']
+      })
+    );
+
+    let result: any = null;
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: () => {},
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    monorepoPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({ cwd: testDir });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    expect(result).toBeDefined();
+    expect(result.type).toBe('lerna');
+  });
+
+  it('should handle lerna.json without packages', async () => {
+    await writeFile(
+      join(testDir, 'lerna.json'),
+      JSON.stringify({
+        version: 'independent'
+      })
+    );
+
+    let result: any = null;
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: () => {},
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    monorepoPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({ cwd: testDir });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    expect(result).toBeDefined();
+    expect(result.type).toBe('lerna');
+    expect(result.workspacePatterns).toEqual([]);
+  });
 });

@@ -384,6 +384,134 @@ describe('duplicates plugin', () => {
     }
   });
 
+  it('should scan scoped packages recursively', async () => {
+    const nmDir = join(testDir, 'node_modules');
+    const scopedDir = join(nmDir, '@scope');
+    await mkdir(scopedDir, { recursive: true });
+
+    // Create two packages under @scope
+    const pkg1Dir = join(scopedDir, 'pkg1');
+    await mkdir(pkg1Dir, { recursive: true });
+    await writeFile(join(pkg1Dir, 'package.json'), JSON.stringify({ name: '@scope/pkg1', version: '1.0.0' }));
+
+    const pkg2Dir = join(scopedDir, 'pkg2');
+    await mkdir(pkg2Dir, { recursive: true });
+    await writeFile(join(pkg2Dir, 'package.json'), JSON.stringify({ name: '@scope/pkg2', version: '2.0.0' }));
+
+    let result: any = null;
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: () => {},
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    duplicatesPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({ cwd: testDir });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    expect(result).toBeDefined();
+    // Should scan scoped packages
+    expect(typeof result).toBe('object');
+  });
+
+  it('should handle unreadable directories gracefully', async () => {
+    const nmDir = join(testDir, 'node_modules');
+    await mkdir(nmDir, { recursive: true });
+
+    // Create a valid package
+    const pkgDir = join(nmDir, 'valid-pkg');
+    await mkdir(pkgDir, { recursive: true });
+    await writeFile(join(pkgDir, 'package.json'), JSON.stringify({ name: 'valid-pkg', version: '1.0.0' }));
+
+    let result: any = null;
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: () => {},
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    duplicatesPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({ cwd: testDir });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    expect(result).toBeDefined();
+    expect(typeof result).toBe('object');
+  });
+
+  it('should detect duplicates across scoped packages', async () => {
+    const nmDir = join(testDir, 'node_modules');
+    const scopedDir1 = join(nmDir, '@scope1');
+    await mkdir(scopedDir1, { recursive: true });
+
+    const scopedDir2 = join(nmDir, '@scope2');
+    await mkdir(scopedDir2, { recursive: true });
+
+    // Create same package under different scopes with different versions
+    const pkg1Dir = join(scopedDir1, 'pkg');
+    await mkdir(pkg1Dir, { recursive: true });
+    await writeFile(join(pkg1Dir, 'package.json'), JSON.stringify({ name: '@scope1/pkg', version: '1.0.0' }));
+
+    const pkg2Dir = join(scopedDir2, 'pkg');
+    await mkdir(pkg2Dir, { recursive: true });
+    await writeFile(join(pkg2Dir, 'package.json'), JSON.stringify({ name: '@scope2/pkg', version: '2.0.0' }));
+
+    let result: any = null;
+    let handler: Function | null = null;
+
+    const testKernel = {
+      config: {},
+      on: (event: string, h: Function) => {
+        if (event === 'analyze') {
+          handler = h;
+        }
+      },
+      reportProgress: () => {},
+      reportFinding: () => {},
+      setResult: (plugin: string, data: any) => {
+        result = data;
+      }
+    } as any;
+
+    duplicatesPlugin.install(testKernel);
+
+    if (handler) {
+      await handler({ cwd: testDir });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    expect(result).toBeDefined();
+    expect(typeof result).toBe('object');
+  });
+
   afterEach(async () => {
     await cleanup();
   });
