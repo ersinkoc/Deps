@@ -318,6 +318,8 @@ export interface AnalyzerContext {
  * Analyzer events
  */
 export interface AnalyzerEvents {
+  /** Analyze event */
+  analyze: AnalyzerContext;
   /** Progress event */
   progress: { plugin: string; percent: number; message?: string };
   /** Finding event */

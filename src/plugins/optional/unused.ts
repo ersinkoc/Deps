@@ -59,16 +59,18 @@ function extractImports(content: string): Set<string> {
     while ((match = pattern.exec(content)) !== null) {
       const importPath = match[1];
 
+      if (!importPath) continue;
+
       // Only capture package imports (not relative paths)
       if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
         // Get the package name (handle scoped packages)
         const parts = importPath.split('/');
         const packageName = importPath.startsWith('@')
-          ? `${parts[0]}/${parts[1]}`
+          ? `${parts[0]}/${parts[1] as string}`
           : parts[0];
 
         // Skip built-in modules
-        if (!BUILTIN_MODULES.has(packageName) && !BUILTIN_MODULES.has(`node:${packageName}`)) {
+        if (packageName && !BUILTIN_MODULES.has(packageName) && !BUILTIN_MODULES.has(`node:${packageName}`)) {
           imports.add(packageName);
         }
       }

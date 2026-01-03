@@ -82,7 +82,7 @@ async function getPnpmWorkspaces(cwd: string): Promise<string[]> {
   // Simple YAML parser for workspaces
   const packagesMatch = content.match(/packages:\s*\n((?:\s*-\s*[^\n]+\n?)+)/);
 
-  if (packagesMatch) {
+  if (packagesMatch && packagesMatch[1]) {
     const patterns = packagesMatch[1]
       .split('\n')
       .map(line => line.replace(/^\s*-\s*/, '').trim())

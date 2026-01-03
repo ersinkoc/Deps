@@ -72,7 +72,11 @@ async function runNpmAudit(cwd: string): Promise<SecurityAudit> {
                 fixedIn: undefined
               });
 
-              audit.bySeverity[severity]++;
+              // Map npm audit severity to bySeverity keys
+              const severityKey = severity === 'critical' ? 'critical' :
+                                 severity === 'error' ? 'high' :
+                                 severity === 'warning' ? 'moderate' : 'low';
+              audit.bySeverity[severityKey]++;
             }
 
             audit.vulnerabilities = vulnList;

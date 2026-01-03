@@ -24,8 +24,8 @@ async function getLatestVersion(packageName: string): Promise<string | null> {
       return null;
     }
 
-    const data = await response.json();
-    return data['dist-tags']?.latest ?? null;
+    const data = await response.json() as { 'dist-tags'?: { latest?: string } } | undefined;
+    return data?.['dist-tags']?.latest ?? null;
   } catch {
     return null;
   }
@@ -59,7 +59,10 @@ export const updatesPlugin: AnalyzerPlugin<AnalyzerContext> = {
       const depsArray = Array.from(allDeps.entries());
 
       for (let i = 0; i < depsArray.length; i++) {
-        const [name, currentVersion] = depsArray[i];
+        const entry = depsArray[i];
+        if (!entry) continue;
+
+        const [name, currentVersion] = entry;
         const percent = Math.round((i / depsArray.length) * 100);
 
         kernel.reportProgress('updates', percent, `Checking ${name}`);

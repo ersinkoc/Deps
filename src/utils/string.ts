@@ -62,7 +62,7 @@ export function escapeHtml(str: string): string {
     "'": '&#39;'
   };
 
-  return str.replace(/[&<>"']/g, char => htmlEntities[char]);
+  return str.replace(/[&<>"']/g, char => htmlEntities[char] || char);
 }
 
 /**
@@ -111,14 +111,16 @@ export function wordWrap(
       let breakPoint = width;
 
       for (let i = width - 1; i >= 0; i--) {
-        if (/\s/.test(remaining[i])) {
+        const char = remaining[i];
+        if (char && /\s/.test(char)) {
           breakPoint = i + 1;
           break;
         }
       }
 
       // If no space found, break at width
-      if (breakPoint === width && !/\s/.test(remaining[width - 1])) {
+      const charAtWidth = remaining[width - 1];
+      if (breakPoint === width && charAtWidth && !/\s/.test(charAtWidth)) {
         // For first line, break at width
         if (wrapped.length === 0) {
           breakPoint = width;
@@ -162,7 +164,8 @@ export function padCenter(str: string, width: number, pad: string = ' '): string
  */
 export function capitalize(str: string): string {
   if (str.length === 0) return str;
-  return str[0].toUpperCase() + str.slice(1);
+  const firstChar = str[0];
+  return (firstChar ? firstChar.toUpperCase() : '') + str.slice(1);
 }
 
 /**

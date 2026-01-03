@@ -31,7 +31,7 @@ export function parseSemver(version: string): Semver {
     /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-\.]+))?(?:\+([0-9A-Za-z-\.]+))?$/
   );
 
-  if (!match) {
+  if (!match || !match[1] || !match[2] || !match[3]) {
     throw new Error(`Invalid semver: ${version}`);
   }
 
@@ -193,7 +193,7 @@ export function satisfies(version: string, range: string): boolean {
   const hyphenMatch = cleanedRange.match(
     /^(\d+\.\d+\.\d+)\s*-\s*(\d+\.\d+\.\d+)$/
   );
-  if (hyphenMatch) {
+  if (hyphenMatch && hyphenMatch[1] && hyphenMatch[2]) {
     return (
       compareSemver(version, hyphenMatch[1]) >= 0 &&
       compareSemver(version, hyphenMatch[2]) <= 0

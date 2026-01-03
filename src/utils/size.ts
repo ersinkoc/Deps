@@ -41,7 +41,7 @@ export function parseSize(size: string): number {
   // Match number and unit
   const match = trimmed.match(/^([\d.]+)\s*([A-Z]*)?$/);
 
-  if (!match) {
+  if (!match || !match[1]) {
     throw new Error(`Invalid size format: ${size}`);
   }
 

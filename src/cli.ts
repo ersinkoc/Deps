@@ -199,16 +199,25 @@ function parseArgs(args: string[]): {
   for (let i = 1; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=');
+    if (!arg) continue;
 
-      if (value !== undefined) {
-        options[key] = value;
-      } else {
-        options[key] = true;
+    if (arg.startsWith('--')) {
+      const parts = arg.slice(2).split('=');
+      const key = parts[0];
+      const value = parts[1];
+
+      if (key) {
+        if (value !== undefined) {
+          options[key] = value;
+        } else {
+          options[key] = true;
+        }
       }
     } else if (arg.startsWith('-')) {
-      options[arg.slice(1)] = true;
+      const flag = arg.slice(1);
+      if (flag) {
+        options[flag] = true;
+      }
     } else {
       positional.push(arg);
     }
@@ -272,7 +281,9 @@ async function main(): Promise<number> {
 
         for (let i = 0; i < result.circular.length; i++) {
           const chain = result.circular[i];
-          console.log(`${i + 1}. ${chain.join(' → ')} → ${chain[0]}`);
+          if (chain && chain.length > 0) {
+            console.log(`${i + 1}. ${chain.join(' → ')} → ${chain[0]}`);
+          }
         }
 
         if (options['fail-on-circular']) {

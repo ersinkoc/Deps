@@ -69,16 +69,21 @@ function findCircularDependencies(
       // or a node has a self-loop
       if (scc.length > 1) {
         // Find the cycle order
-        const cycle = findCycleOrder(graph, scc[0], scc);
-        if (cycle.length > 1) {
-          cycles.push(cycle);
+        const startNode = scc[0];
+        if (startNode) {
+          const cycle = findCycleOrder(graph, startNode, scc);
+          if (cycle.length > 1) {
+            cycles.push(cycle);
+          }
         }
       } else if (scc.length === 1) {
         // Check for self-loop
         const node = scc[0];
-        const successors = graph.get(node) ?? [];
-        if (successors.includes(node)) {
-          cycles.push([node, node]);
+        if (node) {
+          const successors = graph.get(node) ?? [];
+          if (successors.includes(node)) {
+            cycles.push([node, node]);
+          }
         }
       }
     }
