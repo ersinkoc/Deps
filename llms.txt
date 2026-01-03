@@ -1,0 +1,107 @@
+# @oxog/deps
+
+> Zero-dependency analyzer for Node.js projects with circular, unused, duplicate detection, security audit, and monorepo support
+
+## Install
+
+```bash
+npm install @oxog/deps
+```
+
+## Quick Start
+
+```bash
+npx @oxog/deps report
+```
+
+## Basic Usage
+
+```typescript
+import { deps } from '@oxog/deps';
+
+const result = await deps.analyze('./package.json');
+console.log(result.tree);     // Dependency tree
+console.log(result.circular); // Circular deps
+```
+
+## API Summary
+
+### Quick API
+- `deps.analyze(path, options?)` - Analyze dependencies
+
+### Advanced API
+- `createAnalyzer(options)` - Create analyzer instance
+- `analyzer.use(plugin)` - Register plugin
+- `analyzer.on(event, handler)` - Add event listener
+- `analyzer.run()` - Run analysis
+
+### Core Plugins
+- `tree` - Dependency tree visualization
+- `circular` - Circular dependency detection
+
+### Optional Plugins
+- `unused` - Unused dependency detection
+- `missing` - Missing dependency detection
+- `duplicates` - Duplicate version detection
+- `size` - Size impact analysis
+- `updates` - Update suggestions
+- `security` - npm audit wrapper
+- `monorepo` - Workspace support
+
+## CLI Commands
+
+```bash
+npx @oxog/deps tree [--depth=N] [--format=json|md|html]
+npx @oxog/deps circular [--fail-on-circular]
+npx @oxog/deps unused [--ignore=pattern]
+npx @oxog/deps missing
+npx @oxog/deps duplicates
+npx @oxog/deps size [--limit=500kb]
+npx @oxog/deps updates [--major|--minor|--patch]
+npx @oxog/deps security [--fail-on-high]
+npx @oxog/deps report [--format=json|md|html]
+npx @oxog/deps watch
+```
+
+## Common Patterns
+
+### CI Pipeline
+```bash
+npx @oxog/deps circular --fail-on-circular
+npx @oxog/deps size --limit=500kb
+npx @oxog/deps security --fail-on-high
+```
+
+### Monorepo Analysis
+```typescript
+const analyzer = createAnalyzer({ monorepo: true });
+const result = await analyzer.run();
+```
+
+### Custom Plugin
+```typescript
+analyzer.use({
+  name: 'custom',
+  version: '1.0.0',
+  install: (kernel) => {
+    kernel.on('analyze', (ctx) => {
+      // Custom analysis logic
+    });
+  }
+});
+```
+
+## Errors
+
+| Code | Meaning | Solution |
+|------|---------|----------|
+| PACKAGE_NOT_FOUND | package.json not found | Check cwd path |
+| INVALID_PACKAGE_JSON | Invalid JSON | Fix package.json syntax |
+| NODE_MODULES_NOT_FOUND | node_modules missing | Run npm install |
+| CIRCULAR_DETECTED | Circular deps found | Review circular chains |
+| PLUGIN_NOT_FOUND | Unknown plugin name | Check plugin spelling |
+
+## Links
+
+- Docs: https://deps.oxog.dev
+- GitHub: https://github.com/ersinkoc/deps

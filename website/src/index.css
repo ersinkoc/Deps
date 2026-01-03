@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary-50: 236 245 255;
+    --color-primary-100: 217 232 255;
+    --color-primary-200: 190 215 255;
+    --color-primary-300: 153 192 255;
+    --color-primary-400: 110 158 255;
+    --color-primary-500: 74 120 255;
+    --color-primary-600: 52 92 220;
+    --color-primary-700: 40 72 180;
+    --color-primary-800: 36 58 148;
+    --color-primary-900: 32 48 120;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  .dark body {
+    @apply bg-gray-950 text-gray-100;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
