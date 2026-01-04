@@ -328,6 +328,10 @@ export interface AnalyzerEvents {
   error: Error;
   /** Change event (watch mode) */
   change: AnalysisResult;
+  /** Complete event */
+  complete: AnalysisResult;
+  /** Index signature for extensibility */
+  [key: string]: unknown;
 }
 
 /**

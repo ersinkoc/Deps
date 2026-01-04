@@ -6,7 +6,6 @@
  * @packageDocumentation
  */
 
-import { cwd } from 'node:path';
 import { resolve } from 'node:path';
 import { EventBus } from './core/event-bus.js';
 import { CacheManager } from './core/cache.js';
@@ -24,8 +23,10 @@ import type {
   AnalysisResult,
   AnalyzerKernel as IAnalyzerKernel,
   AnalyzerPlugin,
+  AnalyzerEvents,
   PluginName,
-  DependencyNode
+  DependencyNode,
+  DependencyType
 } from './types.js';
 
 /**
@@ -116,7 +117,7 @@ export class AnalyzerKernel implements IAnalyzerKernel {
   readonly config: Readonly<AnalyzerConfig>;
 
   /** Event bus */
-  private eventBus: EventBus;
+  private eventBus: EventBus<AnalyzerEvents>;
 
   /** Cache manager */
   private cache: CacheManager;
@@ -160,7 +161,8 @@ export class AnalyzerKernel implements IAnalyzerKernel {
 
     // Set up event forwarding
     this.eventBus.on('error', (error) => {
-      console.error('Analysis error:', error);
+      // Error events are handled silently - consumers can add their own listeners
+      // The error will be thrown in run() method
     });
   }
 
@@ -182,21 +184,21 @@ export class AnalyzerKernel implements IAnalyzerKernel {
   /**
    * Add event listener
    */
-  on<TEvent extends keyof AnalyzerContext['events']>(
+  on<TEvent extends keyof AnalyzerEvents>(
     event: TEvent,
-    handler: (data: any) => void
+    handler: (data: AnalyzerEvents[TEvent]) => void
   ): void {
-    this.eventBus.on(event as any, handler);
+    this.eventBus.on(event, handler);
   }
 
   /**
    * Emit event
    */
-  async emit<TEvent extends keyof AnalyzerContext['events']>(
+  async emit<TEvent extends keyof AnalyzerEvents>(
     event: TEvent,
-    data: any
+    data: AnalyzerEvents[TEvent]
   ): Promise<void> {
-    await this.eventBus.emit(event as any, data);
+    await this.eventBus.emit(event, data);
   }
 
   /**
@@ -208,11 +210,43 @@ export class AnalyzerKernel implements IAnalyzerKernel {
 
   /**
    * Get dependencies by type
+   * @param type - Dependency type filter
+   * @returns Array of dependency nodes
    */
-  async getDependencies(type?: 'prod' | 'dev' | 'peer' | 'optional'): Promise<DependencyNode[]> {
-    // This would return the dependencies from the parsed package
-    // For now, return empty array
-    return [];
+  async getDependencies(type?: DependencyType): Promise<DependencyNode[]> {
+    // Get the parsed package metadata
+    const pkg = this.context.package;
+
+    if (!pkg) {
+      return [];
+    }
+
+    // Select dependencies based on type
+    const depsMap: Record<DependencyType, Record<string, string> | undefined> = {
+      prod: pkg.dependencies,
+      dev: pkg.devDependencies,
+      peer: pkg.peerDependencies,
+      optional: pkg.optionalDependencies
+    };
+
+    const deps = type ? depsMap[type] : pkg.dependencies;
+
+    if (!deps) {
+      return [];
+    }
+
+    // Convert to DependencyNode array
+    const nodes: DependencyNode[] = [];
+    for (const [name, version] of Object.entries(deps)) {
+      nodes.push({
+        name,
+        version,
+        type: type ?? 'prod',
+        dependencies: []
+      });
+    }
+
+    return nodes;
   }
 
   /**
@@ -394,7 +428,7 @@ export class AnalyzerKernel implements IAnalyzerKernel {
 
       return result;
     } catch (error) {
-      await this.eventBus.emit('error', error);
+      await this.eventBus.emit('error', error as Error);
       throw error;
     }
   }

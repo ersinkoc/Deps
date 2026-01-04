@@ -6,7 +6,7 @@
  * @packageDocumentation
  */
 
-import type { DependencyTree, AnalysisResult } from '../../types.js';
+import type { DependencyTree, AnalysisResult, DependencyNode } from '../../types.js';
 import { escapeHtml } from '../../utils/string.js';
 
 /**
@@ -231,7 +231,10 @@ export function toHTML(result: AnalysisResult): string {
 
     for (const chain of result.circular) {
       output += '<li>\n';
-      output += `<div class="chain">${escapeHtml(chain.join(' → '))} → ${escapeHtml(chain[0])}</div>\n`;
+      const first = chain[0];
+      if (first !== undefined) {
+        output += `<div class="chain">${escapeHtml(chain.join(' → '))} → ${escapeHtml(first)}</div>\n`;
+      }
       output += '</li>\n';
     }
 

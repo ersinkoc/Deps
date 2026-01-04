@@ -205,10 +205,10 @@ export class NodeModulesTraverser {
     parentPath: string
   ): Promise<string | null> {
     try {
-      // Scoped package
-      const parts = name.split('/');
-      const pkgDir = parts.length > 1
-        ? join(parentPath, parts[0], parts[1])
+      // Scoped package (e.g., @types/node)
+      // For scoped packages, we need the full name as-is
+      const pkgDir = name.startsWith('@')
+        ? join(parentPath, name)
         : join(parentPath, name);
 
       const pkgPath = join(pkgDir, 'package.json');
@@ -233,11 +233,8 @@ export class NodeModulesTraverser {
     name: string,
     parentPath: string
   ): Promise<PackageMetadata | null> {
-    const parts = name.split('/');
-    const pkgDir = parts.length > 1
-      ? join(parentPath, parts[0], parts[1])
-      : join(parentPath, name);
-
+    // For scoped packages (e.g., @types/node), use full name as-is
+    const pkgDir = join(parentPath, name);
     const pkgPath = join(pkgDir, 'package.json');
 
     // Check cache
@@ -271,11 +268,8 @@ export class NodeModulesTraverser {
     name: string,
     parentPath: string
   ): PackageMetadata | null {
-    const parts = name.split('/');
-    const pkgDir = parts.length > 1
-      ? join(parentPath, parts[0], parts[1])
-      : join(parentPath, name);
-
+    // For scoped packages (e.g., @types/node), use full name as-is
+    const pkgDir = join(parentPath, name);
     const pkgPath = join(pkgDir, 'package.json');
 
     // Check cache

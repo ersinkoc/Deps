@@ -30,7 +30,8 @@ async function runNpmAudit(cwd: string): Promise<SecurityAudit> {
       const npmAudit = spawn('npm', ['audit', '--json'], {
         cwd,
         stdio: ['ignore', 'pipe', 'pipe'],
-        shell: true
+        shell: false,
+        windowsHide: true
       });
 
       let stdout = '';

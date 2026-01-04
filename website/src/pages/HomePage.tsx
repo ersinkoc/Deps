@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Download, Shield, Zap } from 'lucide-react';
 import { features } from '../data/features';
-import { CodeBlock } from '../components/CodeBlock';
+import { CodeBlock } from '../components/code/CodeBlock';
 
 export const HomePage: React.FC = () => {
   return (

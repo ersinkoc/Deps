@@ -47,6 +47,8 @@ function nodeToTree(
 
   for (let i = 0; i < childCount; i++) {
     const child = children[i];
+    if (!child) continue;
+
     const childIsLast = i === childCount - 1;
 
     // Build prefix for children

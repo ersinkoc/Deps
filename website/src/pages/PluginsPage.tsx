@@ -1,6 +1,6 @@
 import React from 'react';
 import { corePlugins, optionalPlugins } from '../data/plugins';
-import { CodeBlock } from '../components/CodeBlock';
+import { CodeBlock } from '../components/code/CodeBlock';
 import { CheckCircle } from 'lucide-react';
 
 export const PluginsPage: React.FC = () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { cliCommands, globalOptions } from '../data/cliCommands';
-import { CodeBlock } from '../components/CodeBlock';
+import { CodeBlock } from '../components/code/CodeBlock';
 import { Terminal } from 'lucide-react';
 
 export const CLIPage: React.FC = () => {

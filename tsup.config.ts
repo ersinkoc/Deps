@@ -15,6 +15,8 @@ export default defineConfig({
   treeshake: true,
   minify: false,
   shims: true,
+  // Suppress unused import warnings from shim code
+  ignoreWatch: ['**/dist/**'],
   banner: {
     js: '// @oxog/deps - Zero-Dependency NPM Package\n// MIT License - Copyright (c) 2025 Ersin Koç'
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { examples } from '../data/examples';
-import { CodeBlock } from '../components/CodeBlock';
+import { CodeBlock } from '../components/code/CodeBlock';
 import { Folder } from 'lucide-react';
 
 export const ExamplesPage: React.FC = () => {

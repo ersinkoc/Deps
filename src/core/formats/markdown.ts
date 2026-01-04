@@ -87,7 +87,12 @@ export function toMarkdown(result: AnalysisResult): string {
     output += '\n## Circular Dependencies\n\n';
     for (let i = 0; i < result.circular.length; i++) {
       const chain = result.circular[i];
-      output += (i + 1) + '. ' + chain.join(' → ') + ' → ' + chain[0] + '\n';
+      if (chain && chain.length > 0) {
+        const first = chain[0];
+        if (first !== undefined) {
+          output += (i + 1) + '. ' + chain.join(' → ') + ' → ' + first + '\n';
+        }
+      }
     }
     output += '\n';
   }
